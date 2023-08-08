@@ -144,16 +144,16 @@ var
   bResultadoVendas, bResultadoProdutosVendidos: boolean;
   erro, sStatus, sValorTotalGeral, sDataHora: string;
 begin
-  if (FTipoCadastro = eInserir) and (frmProdutos.cdsProdutosAdicionados.IsEmpty) then
-  begin
-    Application.MessageBox('É necessário adicionar produtos para concluir essa operação', 'Aviso', mb_Ok + mb_IconExclamation);
-    btnAdicionarProdutos.SetFocus;
-    exit;
-  end;
-
   if dbLookupComboBoxVenda.KeyValue = 0 then
   begin
     Application.MessageBox('É necessário selecionar um cliente para concluir essa operação', 'Aviso', mb_Ok + mb_IconExclamation);
+     dbLookupComboBoxVenda.SetFocus;
+    exit;
+  end;
+
+  if (FTipoCadastro = eInserir) and (frmProdutos.cdsProdutosAdicionados.IsEmpty) then
+  begin
+    Application.MessageBox('É necessário adicionar produtos para concluir essa operação', 'Aviso', mb_Ok + mb_IconExclamation);
     btnAdicionarProdutos.SetFocus;
     exit;
   end;
