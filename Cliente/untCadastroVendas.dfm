@@ -80,7 +80,7 @@ inherited frmCadastroVendas: TfrmCadastroVendas
           Title.Font.Height = -11
           Title.Font.Name = 'Tahoma'
           Title.Font.Style = [fsBold]
-          Width = 260
+          Width = 252
           Visible = True
         end
         item
@@ -108,7 +108,7 @@ inherited frmCadastroVendas: TfrmCadastroVendas
           Title.Font.Height = -11
           Title.Font.Name = 'Tahoma'
           Title.Font.Style = [fsBold]
-          Width = 50
+          Width = 58
           Visible = True
         end
         item

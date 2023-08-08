@@ -56,6 +56,7 @@ type
     function ProdutosVendidosDelete(pCodigoCliente: string; out erro: string): boolean;
     function VendasDelete(pNumeroVenda: string; out erro: string): boolean;
     procedure HabilitaControles;
+    procedure HabilitaBototes;
     procedure DesabilitaControles;
     procedure LimpaControles;
     procedure PreencheCamposVenda;
@@ -75,6 +76,29 @@ implementation
 {$R *.dfm}
 
 uses untDM, untPesquisarVendas, untProdutos;
+
+procedure TfrmCadastroVendas.HabilitaBototes;
+begin
+  btnInserir.Enabled := true;
+
+  if dbgBaseCadastro.DataSource.DataSet.IsEmpty then
+    begin
+      btnEditar.Enabled := false;
+      btnApagar.Enabled := false;
+      btnPesquisar.Enabled := false;
+      btnAtualizar.Enabled := false;
+    end
+  else
+    begin
+      btnEditar.Enabled := true;
+      btnApagar.Enabled := true;
+      btnPesquisar.Enabled := true;
+      btnAtualizar.Enabled := true;
+    end;
+
+  btnCancelar.Enabled := false;
+  btnGravar.Enabled := false;
+end;
 
 procedure TfrmCadastroVendas.HabilitaControles;
 begin
@@ -268,6 +292,7 @@ begin
           dbgBaseCadastro.DataSource.DataSet.FreeBookmark(CurrentRecord);
 
           LimpaControles;
+          HabilitaBototes;
           ProcessaProdutosVendidosGetId;
         end;
       end;
