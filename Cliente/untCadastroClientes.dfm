@@ -37,6 +37,7 @@ inherited frmCadastroClientes: TfrmCadastroClientes
     end
     inherited btnPesquisar: TBitBtn
       Hint = 'Pesquisa clientes existentes'
+      ShowHint = True
       TabOrder = 3
       OnClick = btnPesquisarClick
     end
