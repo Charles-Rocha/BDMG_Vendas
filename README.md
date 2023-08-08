@@ -27,13 +27,13 @@
 
 ## 💡 Funcionalidades
 
-- **Banco de Dados/Configurar...**: Abre a tela de configuração do arquivo **bdmg_config.ini**. Esse arquivo deve estar ficar na pasta onde é rodado o programa **Servidor.exe**.
+- **Banco de Dados/Configurar...**: Abre a tela de configuração do arquivo **bdmg_config.ini**. Esse arquivo deve ficar na pasta onde é rodado o programa **Servidor.exe**.
 
 - **Cadastro de clientes**: Tela para cadastro dos **clientes** que será necessário para realizar uma **venda**.
 
 - **Cadastro de fornecedores**: Tela para cadastro dos **fornecedores** que será necessário para cadastrar **produtos**.
 
-- **Cadastro de produtos**: Tela para cadastro dos **produtos** que será necessário realizar uma **venda**.
+- **Cadastro de produtos**: Tela para cadastro dos **produtos** que será necessário para realizar uma **venda**.
 
 - **Cadastro de vendas**: Tela para cadastro das **vendas** onde é possível selecionar os **clientes** e **produtos** para a realização da **venda**.
 
