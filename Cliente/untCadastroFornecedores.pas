@@ -43,6 +43,7 @@ type
     procedure LimpaControles;
     procedure PreencheCamposFornecedor;
     function ValidarCNPJ(pCNPJ: string): boolean;
+    function ValidaCamposObrigatorios: boolean;
   public
     { Public declarations }
   end;
@@ -256,6 +257,9 @@ var
   bResultado: boolean;
   sStatus: string;
 begin
+  if not ValidaCamposObrigatorios then
+    exit;
+
   if cmbStatus.Text = 'Ativo' then
     sStatus := '1';
   if cmbStatus.Text = 'Inativo' then
@@ -422,6 +426,34 @@ begin
     begin
       erro := 'Erro encontrado: ' + e.Message;
     end;
+  end;
+end;
+
+function TfrmCadastroFornecedores.ValidaCamposObrigatorios: boolean;
+begin
+  result := true;
+  if edtNomeFantasia.Text = '' then
+  begin
+    Application.MessageBox('O campo Nome Fantasia é de preenchimento obrigatório', 'Aviso', mb_Ok + mb_IconExclamation);
+    result := false;
+    edtNomeFantasia.SetFocus;
+    exit;
+  end;
+
+  if edtRazaoSocial.Text = '' then
+  begin
+    Application.MessageBox('O campo Razão Social é de preenchimento obrigatório', 'Aviso', mb_Ok + mb_IconExclamation);
+    result := false;
+    edtRazaoSocial.SetFocus;
+    exit;
+  end;
+
+  if edtCNPJ.Text = '' then
+  begin
+    Application.MessageBox('O campo CNPJ é de preenchimento obrigatório', 'Aviso', mb_Ok + mb_IconExclamation);
+    result := false;
+    edtCNPJ.SetFocus;
+    exit;
   end;
 end;
 

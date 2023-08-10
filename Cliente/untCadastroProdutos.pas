@@ -45,6 +45,7 @@ type
     procedure DesabilitaControles;
     procedure LimpaControles;
     procedure PreencheCamposProduto;
+    function ValidaCamposObrigatorios: boolean;
   public
     { Public declarations }
     function FormatarMoeda(valor: string): string;
@@ -218,7 +219,9 @@ var
   bResultado: boolean;
   sStatus, sPrecoUnitario: string;
 begin
-  inherited;
+  if not ValidaCamposObrigatorios then
+    exit;
+
   if cmbStatus.Text = 'Ativo' then
     sStatus := '1';
   if cmbStatus.Text = 'Inativo' then
@@ -235,6 +238,7 @@ begin
       StatusBar1.Panels[0].Text := 'Total de registros: ' + IntToStr(dbgBaseCadastro.DataSource.DataSet.RecordCount);
       DesabilitaControles;
     end;
+  inherited;
 end;
 
 procedure TfrmCadastroProdutos.btnApagarClick(Sender: TObject);
@@ -403,6 +407,34 @@ begin
   begin
     Application.MessageBox('Não é permitido efetuar venda para fornecedor inativo', 'Aviso', mb_Ok + mb_IconExclamation);
     dbLookupComboBoxFornecedor.DropDown;
+    exit;
+  end;
+end;
+
+function TfrmCadastroProdutos.ValidaCamposObrigatorios: boolean;
+begin
+  result := true;
+  if edtDescricao.Text = '' then
+  begin
+    Application.MessageBox('O campo Descrição é de preenchimento obrigatório', 'Aviso', mb_Ok + mb_IconExclamation);
+    result := false;
+    edtDescricao.SetFocus;
+    exit;
+  end;
+
+  if edtPrecoUnitario.Text = '0,00' then
+  begin
+    Application.MessageBox('Não é permitido adicionar um produto com o preço zerado', 'Aviso', mb_Ok + mb_IconExclamation);
+    result := false;
+    edtPrecoUnitario.SetFocus;
+    exit;
+  end;
+
+  if dbLookupComboBoxFornecedor.KeyValue = 0 then
+  begin
+    Application.MessageBox('O campo Fornecedor é de preenchimento obrigatório', 'Aviso', mb_Ok + mb_IconExclamation);
+    result := false;
+    dbLookupComboBoxFornecedor.SetFocus;
     exit;
   end;
 end;

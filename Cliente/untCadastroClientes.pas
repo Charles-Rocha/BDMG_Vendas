@@ -43,6 +43,7 @@ type
     procedure LimpaControles;
     procedure PreencheCamposCliente;
     function ValidarCpf(num: string): boolean;
+    function ValidaCamposObrigatorios: boolean;
   public
     { Public declarations }
   end;
@@ -118,13 +119,6 @@ var
 begin
   if ActiveControl = btnCancelar then
   begin
-    exit;
-  end;
-
-  if edtCPF.Text = '' then
-  begin
-    Application.MessageBox('O campo CPF é de preenchimento obrigatório', 'Aviso', mb_Ok + mb_IconExclamation);
-    edtCPF.SetFocus;
     exit;
   end;
 
@@ -221,6 +215,9 @@ var
   bResultado: boolean;
   sStatus: string;
 begin
+  if not ValidaCamposObrigatorios then
+    exit;
+
   if cmbStatus.Text = 'Ativo' then
     sStatus := '1';
   if cmbStatus.Text = 'Inativo' then
@@ -390,6 +387,34 @@ begin
     begin
       erro := 'Erro encontrado: ' + e.Message;
     end;
+  end;
+end;
+
+function TfrmCadastroClientes.ValidaCamposObrigatorios: boolean;
+begin
+  result := true;
+  if edtNome.Text = '' then
+  begin
+    Application.MessageBox('O campo Nome é de preenchimento obrigatório', 'Aviso', mb_Ok + mb_IconExclamation);
+    result := false;
+    edtNome.SetFocus;
+    exit;
+  end;
+
+  if edtCPF.Text = '' then
+  begin
+    Application.MessageBox('O campo CPF é de preenchimento obrigatório', 'Aviso', mb_Ok + mb_IconExclamation);
+    result := false;
+    edtCPF.SetFocus;
+    exit;
+  end;
+
+  if edtDataNascimento.Text = '' then
+  begin
+    Application.MessageBox('O campo Data Nascimento é de preenchimento obrigatório', 'Aviso', mb_Ok + mb_IconExclamation);
+    result := false;
+    edtDataNascimento.SetFocus;
+    exit;
   end;
 end;
 

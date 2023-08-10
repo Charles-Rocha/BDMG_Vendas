@@ -684,6 +684,14 @@ object dm: Tdm
       OnGetText = cdsProdutosVendidosvalortotalGetText
       Size = 255
     end
+    object cdsProdutosVendidoscodigocliente: TWideStringField
+      FieldName = 'codigocliente'
+      Size = 255
+    end
+    object cdsProdutosVendidoscodigoproduto: TWideStringField
+      FieldName = 'codigoproduto'
+      Size = 255
+    end
   end
   object ReqProdutosVendidosPostPut: TRESTRequest
     Client = RESTClient1

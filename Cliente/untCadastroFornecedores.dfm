@@ -127,6 +127,7 @@ inherited frmCadastroFornecedores: TfrmCadastroFornecedores
     Top = 422
     Panels = <
       item
+        Text = 'Total de registros:'
         Width = 50
       end>
     ExplicitTop = 422
@@ -255,7 +256,7 @@ inherited frmCadastroFornecedores: TfrmCadastroFornecedores
   end
   inherited DataSource1: TDataSource
     DataSet = dm.cdsFornecedor
-    Left = 288
-    Top = 272
+    Left = 560
+    Top = 368
   end
 end

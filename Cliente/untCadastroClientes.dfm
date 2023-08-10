@@ -129,6 +129,7 @@ inherited frmCadastroClientes: TfrmCadastroClientes
     Top = 422
     Panels = <
       item
+        Text = 'Total de registros:'
         Width = 50
       end>
     ExplicitTop = 422
@@ -261,7 +262,6 @@ inherited frmCadastroClientes: TfrmCadastroClientes
   end
   inherited DataSource1: TDataSource
     DataSet = dm.cdsCliente
-    Left = 296
-    Top = 72
+    Top = 368
   end
 end

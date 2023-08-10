@@ -63,6 +63,7 @@ type
     function ProdutosVendidosPostPut(out erro: string): boolean;
     function ProdutosVendidosGetId(pCodigoCliente: string; out erro: string): boolean;
     procedure ConfiguraCampos;
+    function ValidaCamposObrigatorios: boolean;
   public
     { Public declarations }
     procedure ProcessaProdutosVendidosGetId;
@@ -105,13 +106,11 @@ begin
   pnlCampos.Visible := true;
   if FTipoCadastro = eInserir then
     dbLookupComboBoxVenda.SetFocus;
-  pnlDBGrid.Enabled := false;
 end;
 
 procedure TfrmCadastroVendas.DesabilitaControles;
 begin
   pnlCampos.Visible := false;
-  pnlDBGrid.Enabled := true;
 end;
 
 procedure TfrmCadastroVendas.LimpaControles;
@@ -141,22 +140,11 @@ end;
 
 procedure TfrmCadastroVendas.btnGravarClick(Sender: TObject);
 var
-  bResultadoVendas, bResultadoProdutosVendidos: boolean;
+  bResultadoVendas, bResultadoProdutosVendidos, bResultadoProdutosVendidosDelete: boolean;
   erro, sStatus, sValorTotalGeral, sDataHora: string;
 begin
-  if dbLookupComboBoxVenda.KeyValue = 0 then
-  begin
-    Application.MessageBox('É necessário selecionar um cliente para concluir essa operação', 'Aviso', mb_Ok + mb_IconExclamation);
-     dbLookupComboBoxVenda.SetFocus;
+  if not ValidaCamposObrigatorios then
     exit;
-  end;
-
-  if (FTipoCadastro = eInserir) and (frmProdutos.cdsProdutosAdicionados.IsEmpty) then
-  begin
-    Application.MessageBox('É necessário adicionar produtos para concluir essa operação', 'Aviso', mb_Ok + mb_IconExclamation);
-    btnAdicionarProdutos.SetFocus;
-    exit;
-  end;
 
   inherited;
   sDataHora := DateTimeToStr(Now);
@@ -169,9 +157,12 @@ begin
   if cmbStatus.Text = 'Pendente' then
     sStatus := '0';
 
+
+  if frmProdutos.ProdutosExistentesAlterados then
+    bResultadoProdutosVendidosDelete := ProdutosVendidosDelete(dm.cdsVendacodigocliente.AsString, erro);
   bResultadoProdutosVendidos := ProdutosVendidosPostPut(erro);
   bResultadoVendas := VendasPostPut(IntToStr(dbLookupComboBoxVenda.KeyValue), sDataHora, sValorTotalGeral, sStatus, erro);
-  if (not bResultadoVendas) and (not bResultadoProdutosVendidos) then
+  if (not bResultadoVendas) and (not bResultadoProdutosVendidos) and (not bResultadoProdutosVendidosDelete) then
     Application.MessageBox(PChar(erro), 'Aviso', mb_Ok + mb_IconExclamation)
   else
     begin
@@ -390,7 +381,7 @@ begin
         jsonBody.AddPair('quantidadevendida', cdsProdutosAdicionadosQuantidade.AsString);
         jsonBody.AddPair('valortotal', cdsProdutosAdicionadosValorTotal.AsString);
         jsonBody.AddPair('codigocliente', dm.cdsClientecodigo.AsString);
-        jsonBody.AddPair('codigoproduto', cdsProdutosAdicionadosCodigo.AsString);
+        jsonBody.AddPair('codigoproduto', cdsProdutosAdicionadosCodigoProduto.AsString);
 
         dm.ReqProdutosVendidosPostPut.Params.Clear;
         dm.ReqProdutosVendidosPostPut.ClearBody;
@@ -551,16 +542,21 @@ begin
     begin
       lblProdutosEfetivadaPendente.Caption := 'Produtos com venda efetivada';
       lblProdutosEfetivadaPendente.Font.Color := clMenuHighlight;
-      btnEfetivarVenda.Visible := false;
+      btnAdicionarProdutos.Enabled := false;
+      cmbStatus.Enabled := false;
+      btnEfetivarVenda.Enabled := false;
     end;
 
     if dm.cdsVendastatus.AsString = 'False' then
     begin
       lblProdutosEfetivadaPendente.Caption := 'Produtos com venda pendente';
       lblProdutosEfetivadaPendente.Font.Color := clRed;
-      btnEfetivarVenda.Visible := true;
+      btnAdicionarProdutos.Enabled := true;
+      cmbStatus.Enabled := true;
+      btnEfetivarVenda.Enabled := true;
     end;
 
+    PreencheCamposVenda;
     stbVendas.Panels[0].Text := 'Total de registros: ' + IntToStr(dbgBaseCadastro.DataSource.DataSet.RecordCount);
     stbProdutosVendidos.Panels[0].Text := 'Total de registros: ' + IntToStr(dbgProdutosVendidos.DataSource.DataSet.RecordCount);
   except
@@ -589,6 +585,35 @@ begin
     begin
       erro := 'Erro encontrado: ' + e.Message;
     end;
+  end;
+end;
+
+function TfrmCadastroVendas.ValidaCamposObrigatorios: boolean;
+begin
+  result := true;
+  if dbLookupComboBoxVenda.KeyValue = 0 then
+  begin
+    Application.MessageBox('É necessário selecionar um cliente para concluir essa operação', 'Aviso', mb_Ok + mb_IconExclamation);
+    result := false;
+    dbLookupComboBoxVenda.SetFocus;
+    exit;
+  end;
+
+  if (FTipoCadastro = eInserir) and (frmProdutos.cdsProdutosAdicionados.IsEmpty) then
+  begin
+    Application.MessageBox('É necessário adicionar produtos para concluir essa operação', 'Aviso', mb_Ok + mb_IconExclamation);
+    result := false;
+    btnAdicionarProdutos.SetFocus;
+    exit;
+  end;
+
+  if (FTipoCadastro = eEditar) and (frmProdutos.cdsProdutosAdicionados.IsEmpty) then
+  begin
+    Application.MessageBox('Ao editar, você deixou a lista de produtos adicionados para venda vazia' + #13#13 +
+                           'É necessário deixar ao menos 1 produto nessa lista para concluir essa operação', 'Aviso', mb_Ok + mb_IconExclamation);
+    result := false;
+    btnAdicionarProdutos.SetFocus;
+    exit;
   end;
 end;
 

@@ -66,6 +66,8 @@ type
     cdsVendadatahora: TWideStringField;
     cdsVendavalortotal: TWideStringField;
     cdsVendastatus: TWideStringField;
+    cdsProdutosVendidoscodigocliente: TWideStringField;
+    cdsProdutosVendidoscodigoproduto: TWideStringField;
     procedure cdsFornecedorstatusGetText(Sender: TField; var Text: string; DisplayText: Boolean);
     procedure cdsProdutostatusGetText(Sender: TField; var Text: string; DisplayText: Boolean);
     procedure cdsProdutoprecounitarioGetText(Sender: TField; var Text: string; DisplayText: Boolean);
