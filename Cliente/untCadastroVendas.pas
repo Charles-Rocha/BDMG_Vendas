@@ -67,6 +67,8 @@ type
   public
     { Public declarations }
     procedure ProcessaProdutosVendidosGetId;
+
+    property TipoCadastro: TTipoCadastro read FTipoCadastro write FTipoCadastro;
   end;
 
 var
@@ -104,6 +106,7 @@ end;
 procedure TfrmCadastroVendas.HabilitaControles;
 begin
   pnlCampos.Visible := true;
+  btnAdicionarProdutos.Enabled := true;
   if FTipoCadastro = eInserir then
     dbLookupComboBoxVenda.SetFocus;
 end;
@@ -142,7 +145,9 @@ procedure TfrmCadastroVendas.btnGravarClick(Sender: TObject);
 var
   bResultadoVendas, bResultadoProdutosVendidos, bResultadoProdutosVendidosDelete: boolean;
   erro, sStatus, sValorTotalGeral, sDataHora: string;
+  CurrentRecord: TBookMark;
 begin
+  CurrentRecord := dbgBaseCadastro.DataSource.DataSet.GetBookmark;
   if not ValidaCamposObrigatorios then
     exit;
 
@@ -157,9 +162,11 @@ begin
   if cmbStatus.Text = 'Pendente' then
     sStatus := '0';
 
-
-  if frmProdutos.ProdutosExistentesAlterados then
-    bResultadoProdutosVendidosDelete := ProdutosVendidosDelete(dm.cdsVendacodigocliente.AsString, erro);
+  if TipoCadastro = eEditar then
+  begin
+    if frmProdutos.ProdutosExistentesAlterados then
+      bResultadoProdutosVendidosDelete := ProdutosVendidosDelete(dm.cdsVendacodigocliente.AsString, erro);
+  end;
   bResultadoProdutosVendidos := ProdutosVendidosPostPut(erro);
   bResultadoVendas := VendasPostPut(IntToStr(dbLookupComboBoxVenda.KeyValue), sDataHora, sValorTotalGeral, sStatus, erro);
   if (not bResultadoVendas) and (not bResultadoProdutosVendidos) and (not bResultadoProdutosVendidosDelete) then
@@ -171,6 +178,8 @@ begin
       StatusBar1.Panels[0].Text := 'Total de registros: ' + IntToStr(dbgBaseCadastro.DataSource.DataSet.RecordCount);
       DesabilitaControles;
       frmProdutos.cdsProdutosAdicionados.EmptyDataSet;
+      dbgBaseCadastro.DataSource.DataSet.GotoBookmark(CurrentRecord);
+      dbgBaseCadastro.DataSource.DataSet.FreeBookmark(CurrentRecord);
       ProcessaProdutosVendidosGetId;
     end;
 end;
@@ -199,7 +208,6 @@ begin
             Application.MessageBox(PChar(erro), 'Aviso', mb_Ok + mb_IconExclamation)
           else
           begin
-            dm.ReqProdutosVendidosGet.Execute;
             dm.ReqVendaGet.Execute;
             StatusBar1.Panels[0].Text := 'Total de registros: ' + IntToStr(dbgBaseCadastro.DataSource.DataSet.RecordCount);
           end;
@@ -365,6 +373,7 @@ end;
 function TfrmCadastroVendas.ProdutosVendidosPostPut(out erro: string): boolean;
 var
   jsonBody: TJSONObject;
+  descricao, precounitario, quantidadevendida, valortotal, codigocliente, codigoproduto: string;
 begin
   result := false;
   erro := '';
@@ -375,6 +384,13 @@ begin
       while not cdsProdutosAdicionados.Eof do
       begin
         jsonBody := TJSONObject.Create;
+
+        descricao := cdsProdutosAdicionadosDescricao.AsString;
+        precounitario := cdsProdutosAdicionadosPrecoUnitario.AsString;
+        quantidadevendida := cdsProdutosAdicionadosQuantidade.AsString;
+        valortotal := cdsProdutosAdicionadosValorTotal.AsString;
+        codigocliente := dm.cdsClientecodigo.AsString;
+        codigoproduto := cdsProdutosAdicionadosCodigoProduto.AsString;
 
         jsonBody.AddPair('descricao', cdsProdutosAdicionadosDescricao.AsString);
         jsonBody.AddPair('precounitario', cdsProdutosAdicionadosPrecoUnitario.AsString);

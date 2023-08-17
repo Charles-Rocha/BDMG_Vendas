@@ -121,7 +121,6 @@ end;
 
 procedure TfrmProdutos.FormShow(Sender: TObject);
 begin
-  FValorTotalGeral := 0;
   cdsProdutosAdicionados.LogChanges := false;
   CarregaProdutosAdicionadosJaGravados;
   cdsProdutosAdicionados.LogChanges := true;
@@ -132,25 +131,37 @@ begin
   if cdsProdutosAdicionados.IsEmpty then
     FCodigoClienteAtual := 0;
 
-  if (FCodigoClienteAtual <> dm.cdsVendacodigocliente.AsInteger) then
+  if frmCadastroVendas.TipoCadastro = eInserir then
   begin
-    cdsProdutosAdicionados.EmptyDataSet;
-    dm.cdsProdutosVendidos.First;
-    while not dm.cdsProdutosVendidos.Eof do
+    if (FCodigoClienteAtual <> dm.cdsVendacodigocliente.AsInteger) then
     begin
-      cdsProdutosAdicionados.Append;
-      cdsProdutosAdicionadosCodigo.AsInteger := dm.cdsProdutosVendidoscodigoproduto.AsInteger;
-      cdsProdutosAdicionadosDescricao.AsString := dm.cdsProdutosVendidosdescricao.AsString;
-      cdsProdutosAdicionadosPrecoUnitario.AsCurrency := dm.cdsProdutosVendidosprecounitario.AsCurrency;
-      cdsProdutosAdicionadosQuantidade.AsInteger := dm.cdsProdutosVendidosquantidadevendida.AsInteger;
-      cdsProdutosAdicionadosValorTotal.AsCurrency := dm.cdsProdutosVendidosvalortotal.AsCurrency;
-      cdsProdutosAdicionadosCodigoProduto.AsInteger := dm.cdsProdutosVendidoscodigoproduto.AsInteger;
-      cdsProdutosAdicionados.Post;
-
-      dm.cdsProdutosVendidos.Next;
+      cdsProdutosAdicionados.EmptyDataSet;
+      FValorTotalGeral := 0;
     end;
+  end;
 
-    cdsProdutosAdicionados.First;
+  if frmCadastroVendas.TipoCadastro = eEditar then
+  begin
+    if (FCodigoClienteAtual <> dm.cdsVendacodigocliente.AsInteger) then
+    begin
+      cdsProdutosAdicionados.EmptyDataSet;
+      dm.cdsProdutosVendidos.First;
+      while not dm.cdsProdutosVendidos.Eof do
+      begin
+        cdsProdutosAdicionados.Append;
+        cdsProdutosAdicionadosCodigo.AsInteger := dm.cdsProdutosVendidoscodigoproduto.AsInteger;
+        cdsProdutosAdicionadosDescricao.AsString := dm.cdsProdutosVendidosdescricao.AsString;
+        cdsProdutosAdicionadosPrecoUnitario.AsCurrency := dm.cdsProdutosVendidosprecounitario.AsCurrency;
+        cdsProdutosAdicionadosQuantidade.AsInteger := dm.cdsProdutosVendidosquantidadevendida.AsInteger;
+        cdsProdutosAdicionadosValorTotal.AsCurrency := dm.cdsProdutosVendidosvalortotal.AsCurrency;
+        cdsProdutosAdicionadosCodigoProduto.AsInteger := dm.cdsProdutosVendidoscodigoproduto.AsInteger;
+        cdsProdutosAdicionados.Post;
+
+        dm.cdsProdutosVendidos.Next;
+      end;
+
+      cdsProdutosAdicionados.First;
+    end;
   end;
   StatusBar1.Panels[0].Text := 'Total de registros: ' + IntToStr(dbgProdutos.DataSource.DataSet.RecordCount);
   StatusBar2.Panels[0].Text := 'Total de registros: ' + IntToStr(dbgProdutosAdicionados.DataSource.DataSet.RecordCount);

@@ -694,22 +694,6 @@ object frmBDMGVendas: TfrmBDMGVendas
     TabOrder = 0
     Text = '(31) 3219-8000 | 0800 283 8337'
   end
-  object FDConnection1: TFDConnection
-    Params.Strings = (
-      'User_Name=BDMG'
-      'Password=bdmg2023'
-      'Database=BDMG_Vendas'
-      'Server=localhost\SQLEXPRESS'
-      'DriverID=MSSQL')
-    LoginPrompt = False
-    Left = 88
-    Top = 8
-  end
-  object FDPhysMSSQLDriverLink1: TFDPhysMSSQLDriverLink
-    DriverID = 'MSSQL'
-    Left = 200
-    Top = 8
-  end
   object MainMenu1: TMainMenu
     Left = 16
     Top = 8

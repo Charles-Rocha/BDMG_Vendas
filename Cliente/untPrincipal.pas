@@ -10,8 +10,6 @@ uses
 
 type
   TfrmBDMGVendas = class(TForm)
-    FDConnection1: TFDConnection;
-    FDPhysMSSQLDriverLink1: TFDPhysMSSQLDriverLink;
     MainMenu1: TMainMenu;
     BancodeDados1: TMenuItem;
     Cadastro1: TMenuItem;
