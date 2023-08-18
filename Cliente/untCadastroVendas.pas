@@ -61,7 +61,7 @@ type
     procedure LimpaControles;
     procedure PreencheCamposVenda;
     function ProdutosVendidosPostPut(pCodigoCliente, pCodigoNumeroVenda: string; out erro: string): boolean;
-    function ProdutosVendidosGetId(pCodigoCliente: string; out erro: string): boolean;
+    function ProdutosVendidosGetId(pCodigoCliente, pCodigoNumeroVenda: string; out erro: string): boolean;
     procedure ConfiguraCampos;
     function ValidaCamposObrigatorios: boolean;
   public
@@ -568,7 +568,7 @@ begin
     try
       if not dm.cdsVenda.IsEmpty then
       begin
-        bResultado := ProdutosVendidosGetId(dm.cdsVendacodigocliente.AsString, erro);
+        bResultado := ProdutosVendidosGetId(dm.cdsVendacodigocliente.AsString, dm.cdsVendanumerovenda.AsString, erro);
         if not bResultado then
           Application.MessageBox(PChar(erro), 'Aviso', mb_Ok + mb_IconExclamation);
 
@@ -605,12 +605,12 @@ begin
   end;
 end;
 
-function TfrmCadastroVendas.ProdutosVendidosGetId(pCodigoCliente: string; out erro: string): boolean;
+function TfrmCadastroVendas.ProdutosVendidosGetId(pCodigoCliente, pCodigoNumeroVenda: string; out erro: string): boolean;
 begin
   result := false;
   erro := '';
   try
-    dm.ReqProdutosVendidosGet.Resource := 'produtosvendidos/' + pCodigoCliente;
+    dm.ReqProdutosVendidosGet.Resource := 'produtosvendidos/' + pCodigoCliente + '/' + pCodigoNumeroVenda;
     dm.ReqProdutosVendidosGet.Execute;
 
     if dm.ReqProdutosVendidosGet.Response.StatusCode <> 200 then

@@ -67,7 +67,9 @@ begin
       if FCodigoCliente > 0 then
       begin
         SQL.Add('AND CodigoCliente = :CodigoCliente');
+        SQL.Add('AND CodigoNumeroVenda = :CodigoNumeroVenda');
         ParamByName('CodigoCliente').Value := FCodigoCliente;
+        ParamByName('CodigoNumeroVenda').Value := FCodigoNumeroVenda;
       end;
 
       if order_by.IsEmpty then

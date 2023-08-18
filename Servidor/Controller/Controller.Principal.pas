@@ -41,7 +41,7 @@ begin
 
   //Produtos Vendidos
   THorse.Get('/produtosvendidos', ListarProdutosVendidos);
-  THorse.Get('/produtosvendidos/:codigocliente', ListarProdutosVendidosId);
+  THorse.Get('/produtosvendidos/:codigocliente/:codigonumerovenda', ListarProdutosVendidosId);
   THorse.Post('/produtosvendidos', InserirProdutosVendidos);
   THorse.Put('/produtosvendidos', EditarProdutosVendidos);
   THorse.Delete('/produtosvendidos/:codigocliente', ExcluirProdutosVendidos);

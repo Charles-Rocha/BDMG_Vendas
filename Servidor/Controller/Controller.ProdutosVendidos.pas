@@ -49,6 +49,7 @@ begin
   try
     produtosvendidos := TProdutosVendidos.Create;
     produtosvendidos.CodigoCliente := Req.Params['CodigoCliente'].ToInteger;
+    produtosvendidos.CodigoNumeroVenda := Req.Params['CodigoNumeroVenda'].ToInteger;
   except on e: exception do
     begin
      res.Send('Erro ao conectar com o banco de dados:' + e.Message).Status(500);
