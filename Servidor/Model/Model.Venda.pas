@@ -104,6 +104,15 @@ begin
       ParamByName('ValorTotal').Value := FValorTotal;
       ParamByName('Status').Value := FStatus;
       ExecSQL;
+
+      //Recuepro o Codigo inserido...
+      Params.Clear;
+      SQL.Clear;
+      SQL.Add('SELECT MAX(NumeroVenda) AS Codigo FROM Vendas');
+
+      Active := true;
+
+      FNumeroVenda := FieldByName('Codigo').AsInteger;
     end;
 
     qry.Free;

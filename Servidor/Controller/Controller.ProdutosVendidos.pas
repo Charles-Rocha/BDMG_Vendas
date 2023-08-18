@@ -100,6 +100,7 @@ begin
       produtosvendidos.ValorTotal := body.GetValue<double>('valortotal', 0);
       produtosvendidos.CodigoCliente := body.GetValue<integer>('codigocliente', 0);
       produtosvendidos.CodigoProduto := body.GetValue<integer>('codigoproduto', 0);
+      produtosvendidos.CodigoNumeroVenda := body.GetValue<integer>('codigonumerovenda', 0);
       produtosvendidos.InserirProdutosVendidos(erro);
 
       body.Free;
@@ -151,6 +152,7 @@ begin
       produtosvendidos.ValorTotal := body.GetValue<double>('valortotal', 0);
       produtosvendidos.CodigoCliente := body.GetValue<integer>('codigocliente', 0);
       produtosvendidos.CodigoProduto := body.GetValue<integer>('codigoproduto', 0);
+      produtosvendidos.CodigoNumeroVenda := body.GetValue<integer>('codigonumerovenda', 0);
       produtosvendidos.EditarProdutosVendidos(erro);
 
       body.Free;

@@ -60,7 +60,7 @@ type
     procedure DesabilitaControles;
     procedure LimpaControles;
     procedure PreencheCamposVenda;
-    function ProdutosVendidosPostPut(out erro: string): boolean;
+    function ProdutosVendidosPostPut(pCodigoCliente, pCodigoNumeroVenda: string; out erro: string): boolean;
     function ProdutosVendidosGetId(pCodigoCliente: string; out erro: string): boolean;
     procedure ConfiguraCampos;
     function ValidaCamposObrigatorios: boolean;
@@ -123,6 +123,8 @@ begin
   edtDataHoraVenda.Clear;
   edtValorTotalVenda.Clear;
   cmbStatus.ItemIndex := 0;
+  lblProdutosEfetivadaPendente.Visible := false;
+  btnEfetivarVenda.Visible := false;
 end;
 
 procedure TfrmCadastroVendas.btnAtualizarClick(Sender: TObject);
@@ -144,14 +146,18 @@ end;
 procedure TfrmCadastroVendas.btnGravarClick(Sender: TObject);
 var
   bResultadoVendas, bResultadoProdutosVendidos, bResultadoProdutosVendidosDelete: boolean;
-  erro, sStatus, sValorTotalGeral, sDataHora: string;
+  erro, sStatus, sValorTotalGeral, sDataHora, sCodigoCliente, sCodigoNumeroVenda, json: string;
   CurrentRecord: TBookMark;
+  arrayCodigoNumeroVenda: TJSONArray;
+  body: TJSONValue;
 begin
   CurrentRecord := dbgBaseCadastro.DataSource.DataSet.GetBookmark;
+  bResultadoProdutosVendidosDelete := false;
   if not ValidaCamposObrigatorios then
     exit;
 
   inherited;
+  sCodigoCliente := dbLookupComboBoxVenda.KeyValue;
   sDataHora := DateTimeToStr(Now);
   if FTipoCadastro = eInserir then
     sValorTotalGeral := FloatToStr(frmProdutos.ValorTotalGeral);
@@ -167,8 +173,13 @@ begin
     if frmProdutos.ProdutosExistentesAlterados then
       bResultadoProdutosVendidosDelete := ProdutosVendidosDelete(dm.cdsVendacodigocliente.AsString, erro);
   end;
-  bResultadoProdutosVendidos := ProdutosVendidosPostPut(erro);
-  bResultadoVendas := VendasPostPut(IntToStr(dbLookupComboBoxVenda.KeyValue), sDataHora, sValorTotalGeral, sStatus, erro);
+  bResultadoVendas := VendasPostPut(sCodigoCliente, sDataHora, sValorTotalGeral, sStatus, erro);
+  json := dm.ReqVendaGet.Response.JSONValue.ToString;
+  body := TJSONObject.ParseJSONValue(TEncoding.UTF8.GetBytes(json), 0) as TJsonValue;
+  sCodigoNumeroVenda := IntToStr(body.GetValue<Integer>('NumeroVenda', 0));
+  dm.ReqVendaGet.Execute;
+
+  bResultadoProdutosVendidos := ProdutosVendidosPostPut(sCodigoCliente, sCodigoNumeroVenda, erro);
   if (not bResultadoVendas) and (not bResultadoProdutosVendidos) and (not bResultadoProdutosVendidosDelete) then
     Application.MessageBox(PChar(erro), 'Aviso', mb_Ok + mb_IconExclamation)
   else
@@ -187,7 +198,7 @@ end;
 procedure TfrmCadastroVendas.btnApagarClick(Sender: TObject);
 var
   erro: string;
-  bResultadoVendasDelete, bResultadoProdutosVendidosDelete: boolean;
+  bResultadoVendasDelete: boolean;
 begin
   inherited;
 
@@ -202,14 +213,15 @@ begin
     begin
       try
         try
-          bResultadoProdutosVendidosDelete := ProdutosVendidosDelete(dm.cdsVendacodigocliente.AsString, erro);
           bResultadoVendasDelete := VendasDelete(dm.cdsVendanumerovenda.AsString, erro);
-          if (not bResultadoVendasDelete) and (not bResultadoProdutosVendidosDelete) then
+          if not bResultadoVendasDelete then
             Application.MessageBox(PChar(erro), 'Aviso', mb_Ok + mb_IconExclamation)
           else
           begin
             dm.ReqVendaGet.Execute;
-            StatusBar1.Panels[0].Text := 'Total de registros: ' + IntToStr(dbgBaseCadastro.DataSource.DataSet.RecordCount);
+            dm.ReqProdutosVendidosGet.Resource := 'produtosvendidos/';
+            dm.ReqProdutosVendidosGet.Execute;
+            stbVendas.Panels[0].Text := 'Total de registros: ' + IntToStr(dbgBaseCadastro.DataSource.DataSet.RecordCount);
           end;
         except
           on E : Exception do
@@ -346,7 +358,8 @@ begin
       btnAtualizar.Enabled := false;
     end;
 
-  StatusBar1.Panels[0].Text := 'Total de registros: ' + IntToStr(dbgBaseCadastro.DataSource.DataSet.RecordCount);
+  stbVendas.Panels[0].Text := 'Total de registros: ' + IntToStr(dbgBaseCadastro.DataSource.DataSet.RecordCount);
+  stbProdutosVendidos.Panels[0].Text := 'Total de registros: ' + IntToStr(dbgProdutosVendidos.DataSource.DataSet.RecordCount);
 
   if not dm.cdsVenda.IsEmpty then
   begin
@@ -355,7 +368,16 @@ begin
   end;
 
   if not dm.cdsProdutosVendidos.IsEmpty then
-    ProcessaProdutosVendidosGetId;
+    begin
+      lblProdutosEfetivadaPendente.Visible := true;
+      btnEfetivarVenda.Visible := true;
+      ProcessaProdutosVendidosGetId;
+    end
+  else
+    begin
+      lblProdutosEfetivadaPendente.Visible := false;
+      btnEfetivarVenda.Visible := false;
+    end;
 end;
 
 procedure TfrmCadastroVendas.PreencheCamposVenda;
@@ -370,10 +392,9 @@ begin
     cmbStatus.ItemIndex := 0;
 end;
 
-function TfrmCadastroVendas.ProdutosVendidosPostPut(out erro: string): boolean;
+function TfrmCadastroVendas.ProdutosVendidosPostPut(pCodigoCliente, pCodigoNumeroVenda: string; out erro: string): boolean;
 var
   jsonBody: TJSONObject;
-  descricao, precounitario, quantidadevendida, valortotal, codigocliente, codigoproduto: string;
 begin
   result := false;
   erro := '';
@@ -385,19 +406,13 @@ begin
       begin
         jsonBody := TJSONObject.Create;
 
-        descricao := cdsProdutosAdicionadosDescricao.AsString;
-        precounitario := cdsProdutosAdicionadosPrecoUnitario.AsString;
-        quantidadevendida := cdsProdutosAdicionadosQuantidade.AsString;
-        valortotal := cdsProdutosAdicionadosValorTotal.AsString;
-        codigocliente := dm.cdsClientecodigo.AsString;
-        codigoproduto := cdsProdutosAdicionadosCodigoProduto.AsString;
-
         jsonBody.AddPair('descricao', cdsProdutosAdicionadosDescricao.AsString);
         jsonBody.AddPair('precounitario', cdsProdutosAdicionadosPrecoUnitario.AsString);
         jsonBody.AddPair('quantidadevendida', cdsProdutosAdicionadosQuantidade.AsString);
         jsonBody.AddPair('valortotal', cdsProdutosAdicionadosValorTotal.AsString);
-        jsonBody.AddPair('codigocliente', dm.cdsClientecodigo.AsString);
+        jsonBody.AddPair('codigocliente', pCodigoCliente);
         jsonBody.AddPair('codigoproduto', cdsProdutosAdicionadosCodigoProduto.AsString);
+        jsonBody.AddPair('codigonumerovenda', pCodigoNumeroVenda);
 
         dm.ReqProdutosVendidosPostPut.Params.Clear;
         dm.ReqProdutosVendidosPostPut.ClearBody;
@@ -440,6 +455,7 @@ begin
       if FVerbo = rmPUT then
         jsonBody.AddPair('numerovenda', dm.cdsVendanumerovenda.AsString);
 
+      jsonBody.AddPair('numerovenda', dm.cdsVendanumerovenda.AsString);
       jsonBody.AddPair('codigocliente', pCodigoCliente);
       jsonBody.AddPair('datahora', pDataHora);
       jsonBody.AddPair('valortotal', pValorTotal);
@@ -510,8 +526,8 @@ begin
   result := false;
   erro := '';
   try
-    DM.ReqVendaDelete.Resource := 'venda/' + pNumeroVenda;
-    DM.ReqVendaDelete.Execute;
+    dm.ReqVendaDelete.Resource := 'venda/' + pNumeroVenda;
+    dm.ReqVendaDelete.Execute;
 
     if dm.ReqVendaDelete.Response.StatusCode <> 200 then
     begin
@@ -550,34 +566,43 @@ var
  bResultado: boolean;
 begin
   try
-    bResultado := ProdutosVendidosGetId(dm.cdsVendacodigocliente.AsString, erro);
-    if not bResultado then
-      Application.MessageBox(PChar(erro), 'Aviso', mb_Ok + mb_IconExclamation);
+    try
+      if not dm.cdsVenda.IsEmpty then
+      begin
+        bResultado := ProdutosVendidosGetId(dm.cdsVendacodigocliente.AsString, erro);
+        if not bResultado then
+          Application.MessageBox(PChar(erro), 'Aviso', mb_Ok + mb_IconExclamation);
 
-    if dm.cdsVendastatus.AsString = 'True' then
-    begin
-      lblProdutosEfetivadaPendente.Caption := 'Produtos com venda efetivada';
-      lblProdutosEfetivadaPendente.Font.Color := clMenuHighlight;
-      btnAdicionarProdutos.Enabled := false;
-      cmbStatus.Enabled := false;
-      btnEfetivarVenda.Enabled := false;
+        lblProdutosEfetivadaPendente.Visible := true;
+        btnEfetivarVenda.Visible := true;
+
+        if dm.cdsVendastatus.AsString = 'True' then
+        begin
+          lblProdutosEfetivadaPendente.Caption := 'Produtos com venda efetivada';
+          lblProdutosEfetivadaPendente.Font.Color := clMenuHighlight;
+          btnAdicionarProdutos.Enabled := false;
+          cmbStatus.Enabled := false;
+          btnEfetivarVenda.Enabled := false;
+        end;
+
+        if dm.cdsVendastatus.AsString = 'False' then
+        begin
+          lblProdutosEfetivadaPendente.Caption := 'Produtos com venda pendente';
+          lblProdutosEfetivadaPendente.Font.Color := clRed;
+          btnAdicionarProdutos.Enabled := true;
+          cmbStatus.Enabled := true;
+          btnEfetivarVenda.Enabled := true;
+        end;
+
+        PreencheCamposVenda;
+      end;
+    except
+      on E : Exception do
+        Application.MessageBox(PChar('Erro encontrado! ' + E.Message),'Aviso',mb_Ok+mb_IconExclamation);
     end;
-
-    if dm.cdsVendastatus.AsString = 'False' then
-    begin
-      lblProdutosEfetivadaPendente.Caption := 'Produtos com venda pendente';
-      lblProdutosEfetivadaPendente.Font.Color := clRed;
-      btnAdicionarProdutos.Enabled := true;
-      cmbStatus.Enabled := true;
-      btnEfetivarVenda.Enabled := true;
-    end;
-
-    PreencheCamposVenda;
+  finally
     stbVendas.Panels[0].Text := 'Total de registros: ' + IntToStr(dbgBaseCadastro.DataSource.DataSet.RecordCount);
     stbProdutosVendidos.Panels[0].Text := 'Total de registros: ' + IntToStr(dbgProdutosVendidos.DataSource.DataSet.RecordCount);
-  except
-    on E : Exception do
-      Application.MessageBox(PChar('Erro encontrado! ' + E.Message),'Aviso',mb_Ok+mb_IconExclamation);
   end;
 end;
 
@@ -586,8 +611,8 @@ begin
   result := false;
   erro := '';
   try
-    DM.ReqProdutosVendidosGet.Resource := 'produtosvendidos/' + pCodigoCliente;
-    DM.ReqProdutosVendidosGet.Execute;
+    dm.ReqProdutosVendidosGet.Resource := 'produtosvendidos/' + pCodigoCliente;
+    dm.ReqProdutosVendidosGet.Execute;
 
     if dm.ReqProdutosVendidosGet.Response.StatusCode <> 200 then
     begin

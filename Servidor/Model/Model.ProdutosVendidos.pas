@@ -15,6 +15,7 @@ type
       FValorTotal: double;
       FCodigoCliente: Integer;
       FCodigoProduto: Integer;
+      FCodigoNumeroVenda: Integer;
 
     public
       Constructor Create;
@@ -27,6 +28,7 @@ type
       property ValorTotal: double read FValorTotal write FValorTotal;
       property CodigoCliente: Integer read FCodigoCliente write FCodigoCliente;
       property CodigoProduto: Integer read FCodigoProduto write FCodigoProduto;
+      property CodigoNumeroVenda: Integer read FCodigoNumeroVenda write FCodigoNumeroVenda;
 
       function ListarProdutosVendidos(order_by: string; out erro: string): TFDQuery;
       function InserirProdutosVendidos(out erro: string): boolean;
@@ -98,8 +100,8 @@ begin
     begin
       Active := false;
       SQL.Clear;
-      SQL.Add('INSERT INTO ProdutosVendidos(Descricao, PrecoUnitario, QuantidadeVendida, ValorTotal, CodigoCliente, CodigoProduto)');
-      SQL.Add('VALUES(:Descricao, :PrecoUnitario, :QuantidadeVendida, :ValorTotal, :CodigoCliente, :CodigoProduto)');
+      SQL.Add('INSERT INTO ProdutosVendidos(Descricao, PrecoUnitario, QuantidadeVendida, ValorTotal, CodigoCliente, CodigoProduto, CodigoNumeroVenda)');
+      SQL.Add('VALUES(:Descricao, :PrecoUnitario, :QuantidadeVendida, :ValorTotal, :CodigoCliente, :CodigoProduto, :CodigoNumeroVenda)');
 
       ParamByName('Descricao').Value := FDescricao;
       ParamByName('PrecoUnitario').Value := FPrecoUnitario;
@@ -107,6 +109,7 @@ begin
       ParamByName('ValorTotal').Value := FValorTotal;
       ParamByName('CodigoCliente').Value := FCodigoCliente;
       ParamByName('CodigoProduto').Value := FCodigoProduto;
+      ParamByName('CodigoNumeroVenda').Value := FCodigoNumeroVenda;
       ExecSQL;
 
       //Recuepro o Codigo inserido...
