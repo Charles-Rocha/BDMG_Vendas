@@ -148,7 +148,6 @@ var
   bResultadoVendas, bResultadoProdutosVendidos, bResultadoProdutosVendidosDelete: boolean;
   erro, sStatus, sValorTotalGeral, sDataHora, sCodigoCliente, sCodigoNumeroVenda, json: string;
   CurrentRecord: TBookMark;
-  arrayCodigoNumeroVenda: TJSONArray;
   body: TJSONValue;
 begin
   CurrentRecord := dbgBaseCadastro.DataSource.DataSet.GetBookmark;
